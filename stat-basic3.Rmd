@@ -1,0 +1,161 @@
+---
+title: "회귀분석 출석과제 방송대 2022"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1번 문제
+1) 자료파일 만들기
+```{r}
+temp <- c(194.5, 194.3, 197.9, 198.4, 199.4, 199.9, 200.9, 201.1, 201.4, 201.3, 203.6, 204.6, 209.5, 208.6, 210.7, 211.9, 212.2)
+temp
+press <- c(20.79, 20.79, 22.40, 22.67, 23.15, 23.35, 23.89, 23.99, 24.02, 24.01, 25.14, 26.57, 28.49, 27.76, 29.04, 29.88, 30.06)
+press
+Lpress <- 100*log10(press)
+Lpress
+```
+2) 자료를 읽어 산점도 그리기
+```{r}
+plot(temp, Lpress, pch=19)
+```
+
+3) 회귀모형 
+<br>
+회귀계수의 추정값은 절편 b0 = -42.164, 기울기 b1 = 0.895      
+<br>
+단순회귀방정식 : ![formular](https://latex.codecogs.com/svg.image?%5Cwidehat%7BLpress%7D=-42.164&plus;0.895%5Ctimes%20%5Cwidehat%7Btemp%7D)
+<br>
+기울기에 대한 t-값=54.42이고 p-값=2x10^-16 이 매우 작으므로 귀무가설 기각
+<br>
+결정계수 = 0.995 로서 총변동의 99.5% 를 회귀방정식으로 설명 가능
+<br>
+F-값=2962 이고, 이에 대한 p-값=2.2x10^-16 으로서 회귀직선이 유의미함
+```{r}
+result.lm = lm(Lpress ~ temp)
+summary(result.lm)
+```
+
+4) 분산분석표 구하기
+<br>
+회귀방정식이 유의한가에 대한 검정은 분산분석표에 의한 F-검정으로 수행
+<br>
+검정통계량 F0 = 2961.5 이고, 이에 대한 유의확률 p-값=2.2x10^-16 
+<br>
+이 매우 작으므로 적합된 회귀선이 유의하다
+```{r}
+anova(result.lm)
+```
+
+5) 잔차 및 추정값 보기
+<br>
+잔차 및 추정값 출력
+```{r}
+names(result.lm)
+```
+```{r}
+wholeBind <- {}
+cbind(wholeBind, temp, Lpress, result.lm$residuals, result.lm$fitted.values)
+```
+
+6) 잔차그림 그리기
+<br>
+잔차를 독립변수 temp에 대해서 그려보면
+<br>
+잔차는 0을 중심으로 일정한 범위 내에 있으므로 회귀에 대한 기본 가정을 만족
+```{r}
+plot(temp, result.lm$resid, pch=19)
+abline(h=0, lty=2)
+```
+
+7) 추정값의 신뢰대 구하기
+<br>
+```{r}
+Lpress
+LpressMat = (Lpress-3)
+LpressMat
+p.x = data.frame(LpressMat)
+p.x
+pc = predict(result.lm, int="c", newdata = p.x)
+pc
+pred.x = p.x$LpressMat
+pred.x
+plot(temp, Lpress, ylim = range(Lpress, pc))
+matplot(pred.x, pc, lty=1, lwd=1, col="BLUE")
+?matlines
+```
+
+
+## 2번 문제
+헬스클럽 30명의 건강자료              <br>
+X1:몸무게(파운드)                     <br>
+X2:분당 정지 맥박수                   <br>
+X3:근력(파운드)                       <br>
+X4:1/4마일 시험주행속도(초)           <br>
+Y:1마일 주행속도(초)                 <br>
+
+1) 자료읽기                           <br>
+```{r}
+X1 <- c(217,141,152,153,180,193,162,180,205,168,232,146,173,155,212)
+X2 <- c(67,52,58,56,66,71,65,80,77,74,65,68,51,64,66)
+X3 <- c(260,190,203,183,170,178,160,170,188,170,220,158,243,198,220)
+X4 <- c(91,66,68,70,77,82,74,84,83,79,72,68,56,59,77)
+Y  <- c(481,292,338,357,396,429,345,469,425,358,393,346,279,311,401)
+dataF <- data.frame(X1,X2,X3,X4,Y)
+dataF
+head(dataF)
+```
+2) 기술통계량 및 상관계수 보기                      <br>
+독립변수와 종속변수의 상관계수가 전반적으로 높음    <br>
+X3 과 Y 간에서는 상관계수가 낮음을 알 수 있음       <br> 
+```{r}
+summary(dataF)
+cor(dataF)
+```
+
+3) 회귀모형 적합하기                                <br>
+추정된 회귀방정식 :    
+![formular](https://latex.codecogs.com/svg.image?\widehat{Y}=-144.775&space;&plus;&space;0.32\times&space;X1&space;&plus;&space;1.595\times&space;X2&space;&plus;&space;0.217\times&space;X3&space;&plus;&space;4.285\times&space;X4&space;)
+<br>
+결정계수 : R^2 = 0.9055                               <br>
+X1 유의확률 p-값=0.4196 이므로 유의수준 a=0.05 에서 귀무가설 기각 불가<br>
+X2 유의확률 P-값=0.2545 이므로 유의수준 a=0.05 에서 귀무가설 기각 불가<br>
+X3 유의확률 P-값=0.5305 이므로 유의수준 a=0.05 에서 귀무가설 기각 불가<br>
+X4 유의확률 p-값=0.0016 이므로 유의수준 a=0.05 에서 귀무가설 기각<br>
+```{r}
+dataF.lm = lm(Y~X1+X2+X3+X4, data=dataF)
+summary(dataF.lm)
+```
+
+4) 분산분석표                               <br>
+회귀제곱합 = 24081.1 + 12900.5 + 246.9 + 8819 = 46,047.5        <br>
+평균제곱 = 46,047.5 / 4 = 11,511.875                            <br>
+F-값 = 4                                                        <br>
+```{r}
+anova(dataF.lm)
+```
+
+5) 잔차산점도 그리기                                            <br>
+독립변수, 종속변수의 추정값과 잔차 간의 관계                    <br>
+X1 과 잔차의 산점도
+```{r}
+plot(dataF$X1, dataF.lm$resid)
+```
+X2 와 잔차의 산점도
+```{r}
+plot(dataF$X2, dataF.lm$resid)
+```
+X3 와 잔차의 산점도
+```{r}
+plot(dataF$X3, dataF.lm$resid)
+```
+X4 와 잔차의 산점도
+```{r}
+plot(dataF$X4, dataF.lm$resid)
+```
+추정값과 잔차의 산점도
+```{r}
+plot(dataF$Y, dataF.lm$resid)
+```
